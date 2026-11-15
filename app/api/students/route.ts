@@ -1,9 +1,16 @@
-﻿
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireAdmin } from "@/lib/supabase/require-admin";
 
 export async function POST(request: Request) {
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json(
+        { error: "Unauthorized. Admin login required." },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
 
     const {

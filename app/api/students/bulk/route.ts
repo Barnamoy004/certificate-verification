@@ -1,8 +1,16 @@
 ﻿import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireAdmin } from "@/lib/supabase/require-admin";
 
 export async function POST(request: Request) {
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json(
+        { error: "Unauthorized. Admin login required." },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const students = body.students;
 
@@ -30,12 +38,10 @@ export async function POST(request: Request) {
     ];
 
     for (let i = 0; i < students.length; i++) {
-      const student = students[i];
-
       for (const field of requiredFields) {
         if (
-          typeof student[field] !== "string" ||
-          !student[field].trim()
+          typeof students[i][field] !== "string" ||
+          !students[i][field].trim()
         ) {
           return NextResponse.json(
             { error: `Row ${i + 2}: Missing or invalid ${field}.` },
